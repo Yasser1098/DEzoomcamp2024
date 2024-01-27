@@ -70,4 +70,19 @@ WHERE "pickup_date" = '2019-09-18'
 GROUP BY "Borough"
 HAVING SUM("total_amount") > 50000;
 ...................................................................................................................................
-6. 
+6. WITH dr_tab AS (
+    SELECT z."Zone", gr."DOLocationID", DATE(gr."lpep_pickup_datetime") AS pickup_date, gr."tip_amount"
+    FROM green_taxi_trips gr
+    LEFT JOIN taxi_zone_data z ON gr."PULocationID" = z."LocationID"
+    WHERE z."Zone" = 'Astoria' AND
+          EXTRACT(YEAR FROM DATE(gr."lpep_pickup_datetime")) = '2019' AND
+          EXTRACT(MONTH FROM DATE(gr."lpep_pickup_datetime")) = '09'
+          
+)
+
+SELECT dz."Zone", MAX(dr_tab."tip_amount") as tot_tip
+FROM dr_tab
+LEFT JOIN taxi_zone_data dz ON dr_tab."DOLocationID" = dz."LocationID"
+GROUP BY dz."Zone"
+ORDER BY tot_tip DESC
+LIMIT 1;
